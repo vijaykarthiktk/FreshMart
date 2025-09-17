@@ -1,5 +1,6 @@
 import type { Route } from "./+types/products";
 import React, { useEffect, useState } from 'react';
+import { Rating } from '../components/ui/Rating';
 import { apiFetch } from '../lib/api';
 import { AuthGate, LogoutButton, useUser } from '../components/AuthGate';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
@@ -75,19 +76,19 @@ function ProductsInner() {
     }, []);
 
     return (
-        <div className="container mx-auto p-4 space-y-4">
+        <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Products</h1>
-                <div className="text-sm">{user?.email} <LogoutButton /></div>
+                <div className="text-sm text-gray-600">{user?.email} <LogoutButton /></div>
             </div>
 
             {notif && (
-                <div className="p-3 bg-yellow-100 border border-yellow-300">
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
                     <strong>{notif.title}: </strong>{notif.message}
                 </div>
             )}
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {products.map(p => (
                     <ProductCard key={p._id} product={p} />
                 ))}
@@ -128,7 +129,7 @@ function ProductCard({ product }: { product: Product }) {
     };
 
     return (
-        <div className="border p-3 space-y-2">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm space-y-2">
             <div className="flex justify-between">
                 <h3 className="font-semibold">{product.name}</h3>
                 <span>${product.price.toFixed(2)}</span>
@@ -140,19 +141,9 @@ function ProductCard({ product }: { product: Product }) {
             <div className="pt-2 border-t mt-2 space-y-2">
                 <div className="flex items-center gap-2">
                     <label>Rate:</label>
-                    <div role="radiogroup" aria-label="Rating" className="flex select-none">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                            <button
-                                key={n}
-                                type="button"
-                                onClick={() => setRating(n)}
-                                aria-pressed={rating >= n}
-                                aria-label={`${n} out of 5`}
-                                className={`text-2xl leading-none px-1 transition-opacity ${rating >= n ? 'opacity-100' : 'opacity-40'} hover:opacity-100 focus:outline-none`}
-                            >
-                                {['😡', '😞', '😐', '🙂', '😍'][n - 1]}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-2">
+                        <Rating value={rating} onChange={setRating} />
+                        <span className="text-xs text-gray-500">{rating}/5</span>
                     </div>
                 </div>
                 <textarea className="border p-2 w-full" placeholder="Comment" value={comment} onChange={e => setComment(e.target.value)} />

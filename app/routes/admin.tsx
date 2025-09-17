@@ -77,29 +77,31 @@ function Dashboard() {
     };
 
     return (
-        <div className="p-4 space-y-6">
+        <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Admin Dashboard</h1>
             </div>
 
             <section className="grid md:grid-cols-3 gap-4">
-                <div className="border p-3"><div className="text-sm text-gray-600">Products</div><div className="text-2xl font-semibold">{overview?.productCount ?? '—'}</div></div>
-                <div className="border p-3"><div className="text-sm text-gray-600">Feedback</div><div className="text-2xl font-semibold">{overview?.feedbackCount ?? '—'}</div></div>
-                <div className="border p-3"><div className="text-sm text-gray-600">Top Rated</div><div className="text-sm">{ratings.slice(0, 3).map(r => r._id).join(', ')}</div></div>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"><div className="text-sm text-gray-600">Products</div><div className="text-2xl font-semibold">{overview?.productCount ?? '—'}</div></div>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"><div className="text-sm text-gray-600">Feedback</div><div className="text-2xl font-semibold">{overview?.feedbackCount ?? '—'}</div></div>
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"><div className="text-sm text-gray-600">Top Rated</div><div className="text-sm">{ratings.slice(0, 3).map(r => r._id).join(', ')}</div></div>
             </section>
 
             <section className="space-y-2">
                 <h2 className="font-semibold">Price Trends</h2>
                 <ProductPicker onPick={setSelectedProduct} />
-                <LineChart data={priceHistory.map(h => ({ createdAt: h.createdAt, price: h.newPrice }))} xKey="createdAt" yKey="price" />
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm inline-block">
+                    <LineChart data={priceHistory.map(h => ({ createdAt: h.createdAt, price: h.newPrice }))} xKey="createdAt" yKey="price" />
+                </div>
             </section>
 
             <section className="space-y-2">
                 <h2 className="font-semibold">Notifications</h2>
                 <div className="flex gap-2">
-                    <input className="border p-2" placeholder="Title" value={broadcastTitle} onChange={e => setBroadcastTitle(e.target.value)} />
-                    <input className="border p-2 flex-1" placeholder="Message" value={broadcastMsg} onChange={e => setBroadcastMsg(e.target.value)} />
-                    <button className="bg-blue-600 text-white px-3" onClick={handleBroadcast}>Send</button>
+                    <input className="w-56 rounded-lg border border-gray-300 px-3 py-2" placeholder="Title" value={broadcastTitle} onChange={e => setBroadcastTitle(e.target.value)} />
+                    <input className="flex-1 rounded-lg border border-gray-300 px-3 py-2" placeholder="Message" value={broadcastMsg} onChange={e => setBroadcastMsg(e.target.value)} />
+                    <button className="bg-blue-600 text-white px-3 rounded-lg" onClick={handleBroadcast}>Send</button>
                 </div>
             </section>
 
@@ -107,7 +109,7 @@ function Dashboard() {
                 <h2 className="font-semibold">Auto Price Adjust</h2>
                 <div className="flex gap-2 items-center">
                     <ProductPicker onPick={setSelectedProduct} />
-                    <button className="bg-green-600 text-white px-3" onClick={handleAutoAdjust}>Run Auto-Adjust</button>
+                    <button className="bg-green-600 text-white px-3 rounded-lg" onClick={handleAutoAdjust}>Run Auto-Adjust</button>
                 </div>
             </section>
         </div>
@@ -120,7 +122,7 @@ function ProductPicker({ onPick }: { onPick: (id: string) => void }) {
         apiFetch<any[]>('/products').then(setProducts);
     }, []);
     return (
-        <select className="border p-2" onChange={e => onPick(e.target.value)} defaultValue="">
+        <select className="rounded-lg border border-gray-300 px-3 py-2" onChange={e => onPick(e.target.value)} defaultValue="">
             <option value="" disabled>Select a product</option>
             {products.map(p => (
                 <option key={p._id} value={p._id}>{p.name}</option>
