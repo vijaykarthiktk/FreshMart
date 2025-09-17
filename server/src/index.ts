@@ -13,9 +13,14 @@ import { authMiddleware } from './middleware/auth.js';
 dotenv.config();
 
 const app = express();
-// CORS to allow Vite dev server (5173) and same-origin
+// CORS to allow Vite dev server (5173), same-origin, and ngrok URLs
 app.use(cors({
-    origin: [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/],
+    origin: [
+        /^http:\/\/localhost:\d+$/,
+        /^http:\/\/127\.0\.0\.1:\d+$/,
+        /^https?:\/\/.*\.ngrok.*$/,
+        /^https?:\/\/.*\.ngrok-free\.app$/
+    ],
     credentials: true,
 }));
 app.use(express.json());
