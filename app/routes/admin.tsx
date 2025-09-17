@@ -72,7 +72,7 @@ function Dashboard() {
 
     const handleAutoAdjust = async () => {
         if (!selectedProduct) return;
-        const p = await apiFetch(`/products/${selectedProduct}/auto-adjust`, { method: 'POST' });
+        const p = await apiFetch(`/products/${selectedProduct}/auto-adjust`, { method: 'POST' }) as any;
         alert(`New price: $${p.price.toFixed(2)}`);
     };
 
