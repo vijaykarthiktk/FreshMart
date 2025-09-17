@@ -22,7 +22,6 @@ function Navbar() {
                 <nav className="flex items-center gap-4 text-sm">
                     <Link to="/products" className="hover:underline">Products</Link>
                     <Link to="/admin" className="hover:underline">Admin</Link>
-                    <a href="https://reactrouter.com/docs" target="_blank" rel="noreferrer" className="text-gray-600 hover:text-gray-900">Docs</a>
                 </nav>
             </div>
         </header>
