@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router";
-import Button from "./ui/Button";
+import { Button } from "./ui/Button";
 
 export default function HomeHero() {
     return (
