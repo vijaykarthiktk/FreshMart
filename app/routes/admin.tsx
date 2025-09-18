@@ -54,10 +54,14 @@ function Dashboard() {
     const [priceHistory, setPriceHistory] = useState<any[]>([]);
     const [broadcastTitle, setBroadcastTitle] = useState('Flash Sale');
     const [broadcastMsg, setBroadcastMsg] = useState('Bananas 15% off!');
+    const [products, setProducts] = useState<any[]>([]);
+    const [showAddProduct, setShowAddProduct] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<any>(null);
 
     useEffect(() => {
         apiFetch('/admin/analytics/overview').then(setOverview);
         apiFetch<any[]>('/admin/analytics/ratings').then(setRatings);
+        apiFetch<any[]>('/products').then(setProducts);
     }, []);
 
     useEffect(() => {
@@ -74,6 +78,38 @@ function Dashboard() {
         if (!selectedProduct) return;
         const p = await apiFetch(`/products/${selectedProduct}/auto-adjust`, { method: 'POST' }) as any;
         alert(`New price: $${p.price.toFixed(2)}`);
+    };
+
+    const handleAddProduct = async (product: any) => {
+        try {
+            await apiFetch('/products', { method: 'POST', body: JSON.stringify(product) });
+            setProducts(await apiFetch<any[]>('/products'));
+            setShowAddProduct(false);
+            alert('Product added');
+        } catch (e: any) {
+            alert('Failed to add product: ' + e.message);
+        }
+    };
+
+    const handleEditProduct = async (product: any) => {
+        try {
+            await apiFetch(`/products/${editingProduct._id}`, { method: 'PUT', body: JSON.stringify(product) });
+            setProducts(await apiFetch<any[]>('/products'));
+            setEditingProduct(null);
+            alert('Product updated');
+        } catch (e: any) {
+            alert('Failed to update product: ' + e.message);
+        }
+    };
+
+    const handleHideProduct = async (id: string, hidden: boolean) => {
+        try {
+            await apiFetch(`/products/${id}`, { method: 'PATCH', body: JSON.stringify({ hidden }) });
+            setProducts(await apiFetch<any[]>('/products'));
+            alert(hidden ? 'Product hidden' : 'Product shown');
+        } catch (e: any) {
+            alert('Failed to update product: ' + e.message);
+        }
     };
 
     return (
@@ -112,6 +148,31 @@ function Dashboard() {
                     <button className="bg-green-600 text-white px-3 rounded-lg" onClick={handleAutoAdjust}>Run Auto-Adjust</button>
                 </div>
             </section>
+
+            <section className="space-y-2">
+                <h2 className="font-semibold">Product Management</h2>
+                <div className="flex gap-2">
+                    <button className="bg-blue-600 text-white px-3 rounded-lg" onClick={() => setShowAddProduct(true)}>Add Product</button>
+                </div>
+                <div className="space-y-2">
+                    {products.map(p => (
+                        <div key={p._id} className="flex justify-between items-center p-2 border rounded">
+                            <div>
+                                <strong>{p.name}</strong> - ${p.price} - Stock: {p.inventory} {p.hidden && <span className="text-red-500">(Hidden)</span>}
+                            </div>
+                            <div className="flex gap-2">
+                                <button className="bg-yellow-500 text-white px-2 rounded" onClick={() => setEditingProduct(p)}>Edit</button>
+                                <button className="bg-red-500 text-white px-2 rounded" onClick={() => handleHideProduct(p._id, !p.hidden)}>
+                                    {p.hidden ? 'Show' : 'Hide'}
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {showAddProduct && <ProductForm onSave={handleAddProduct} onCancel={() => setShowAddProduct(false)} />}
+            {editingProduct && <ProductForm product={editingProduct} onSave={handleEditProduct} onCancel={() => setEditingProduct(null)} />}
         </div>
     );
 }
@@ -128,5 +189,39 @@ function ProductPicker({ onPick }: { onPick: (id: string) => void }) {
                 <option key={p._id} value={p._id}>{p.name}</option>
             ))}
         </select>
+    );
+}
+
+function ProductForm({ product, onSave, onCancel }: { product?: any; onSave: (p: any) => void; onCancel: () => void }) {
+    const [form, setForm] = useState({
+        name: product?.name || '',
+        description: product?.description || '',
+        price: product?.price || 0,
+        inventory: product?.inventory || 0,
+        seasonalTag: product?.seasonalTag || '',
+    });
+
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        onSave(form);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg w-96">
+                <h3 className="text-lg font-semibold mb-4">{product ? 'Edit Product' : 'Add Product'}</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <input className="w-full border p-2" placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+                    <input className="w-full border p-2" placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} required />
+                    <input className="w-full border p-2" type="number" step="0.01" placeholder="Price" value={form.price} onChange={e => setForm({ ...form, price: parseFloat(e.target.value) })} required />
+                    <input className="w-full border p-2" type="number" placeholder="Inventory" value={form.inventory} onChange={e => setForm({ ...form, inventory: parseInt(e.target.value) })} required />
+                    <input className="w-full border p-2" placeholder="Seasonal Tag" value={form.seasonalTag} onChange={e => setForm({ ...form, seasonalTag: e.target.value })} />
+                    <div className="flex gap-2">
+                        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+                        <button type="button" onClick={onCancel} className="bg-gray-600 text-white px-4 py-2 rounded">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 }
