@@ -17,6 +17,7 @@ interface Product {
     inventory: number;
     seasonalTag?: string;
     avgRating?: number;
+    hidden?: boolean;
 }
 
 export function meta({ }: Route.MetaArgs) {
@@ -55,6 +56,7 @@ function ProductsInner() {
                     inventory: data.inventory,
                     seasonalTag: data.seasonalTag || undefined,
                     avgRating: data.avgRating || 0,
+                    hidden: data.hidden || false,
                 } as Product;
             });
             // Keep client list sorted by name for stability

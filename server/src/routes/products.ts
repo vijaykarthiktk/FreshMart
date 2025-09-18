@@ -24,6 +24,7 @@ async function mirrorProductToFirestore(p: any) {
             inventory: p.inventory,
             seasonalTag: p.seasonalTag || null,
             avgRating: p.avgRating || 0,
+            hidden: p.hidden || false,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
     } catch (e) {
@@ -48,14 +49,14 @@ async function notifyPriceChange(name: string, newPrice: number) {
 
 // Public: list products
 router.get('/', async (_req, res) => {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await Product.find({ hidden: { $ne: true } }).sort({ createdAt: -1 });
     res.json(products);
 });
 
 // Public: get single product
 router.get('/:id', async (req, res) => {
     const p = await Product.findById(req.params.id);
-    if (!p) return res.status(404).json({ error: 'Not found' });
+    if (!p || p.hidden) return res.status(404).json({ error: 'Not found' });
     res.json(p);
 });
 
@@ -90,6 +91,15 @@ router.put('/:id', authMiddleware, adminOnly, async (req: AuthedRequest, res) =>
         await mirrorProductToFirestore(updated);
         if (priceChanging) await notifyPriceChange(updated.name, updated.price);
     }
+    res.json(updated);
+});
+
+// Admin: partial update (e.g., hide/show)
+router.patch('/:id', authMiddleware, adminOnly, async (req: AuthedRequest, res) => {
+    const updates = req.body;
+    const updated = await Product.findByIdAndUpdate(req.params.id, updates, { new: true });
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    await mirrorProductToFirestore(updated);
     res.json(updated);
 });
 
