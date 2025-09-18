@@ -1,6 +1,6 @@
 import type { Route } from "./+types/feedback";
 import React, { useEffect, useState } from 'react';
-import { Rating } from '../components/ui/Rating';
+
 import { apiFetch } from '../lib/api';
 import { AuthGate, LogoutButton, useUser } from '../components/AuthGate';
 import { Button } from "~/components/ui/Button";
@@ -116,9 +116,17 @@ function FeedbackForm({ product }: { product: Product }) {
             <div className="space-y-2">
                 <div className="flex items-center gap-2">
                     <Label>Rate:</Label>
-                    <div className="flex items-center gap-2">
-                        <Rating value={rating} onChange={setRating} />
-                        <span className="text-xs text-gray-500">{rating}/5</span>
+                    <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                            <span
+                                key={star}
+                                onClick={() => setRating(star)}
+                                className="cursor-pointer text-2xl"
+                            >
+                                {star <= rating ? '⭐' : '☆'}
+                            </span>
+                        ))}
+                        <span className="text-xs text-gray-500 ml-2">{rating}/5</span>
                     </div>
                 </div>
                 <Textarea className="border p-2 w-full" placeholder="Comment" value={comment} onChange={e => setComment(e.target.value)} />
