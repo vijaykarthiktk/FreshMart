@@ -8,6 +8,7 @@ import feedbackRouter from './routes/feedback.js';
 import notificationRouter from './routes/notifications.js';
 import meRouter from './routes/me.js';
 import adminRouter from './routes/admin.js';
+import orderRouter from './routes/orders.js';
 import { authMiddleware } from './middleware/auth.js';
 
 dotenv.config();
@@ -37,6 +38,7 @@ app.use('/api/feedback', authMiddleware, feedbackRouter);
 app.use('/api/notifications', authMiddleware, notificationRouter);
 app.use('/api/me', meRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/orders', authMiddleware, orderRouter);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://freshmartAdmin:1234@cluster0.zddtdoa.mongodb.net/freshmart';
 const PORT = process.env.PORT || 4000;

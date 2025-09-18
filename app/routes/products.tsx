@@ -1,14 +1,13 @@
 import type { Route } from "./+types/products";
 import React, { useEffect, useState } from 'react';
-import { Rating } from '../components/ui/Rating';
 import { apiFetch } from '../lib/api';
 import { AuthGate, LogoutButton, useUser } from '../components/AuthGate';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db } from '../lib/firebase.client';
 import { Button } from "~/components/ui/Button";
 import { Card } from "~/components/ui/Card";
-import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/Input";
 
 interface Product {
     _id: string;
@@ -18,14 +17,6 @@ interface Product {
     inventory: number;
     seasonalTag?: string;
     avgRating?: number;
-}
-
-interface FeedbackItem {
-    _id: string;
-    userId: string;
-    rating: number;
-    comment?: string;
-    createdAt: string;
 }
 
 export function meta({ }: Route.MetaArgs) {
@@ -102,33 +93,17 @@ function ProductsInner() {
 }
 
 function ProductCard({ product }: { product: Product }) {
-    const [rating, setRating] = useState(5);
-    const [comment, setComment] = useState('');
-    const [showComments, setShowComments] = useState(false);
-    const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
-    const [error, setError] = useState<string | null>(null);
+    const [quantity, setQuantity] = useState(1);
 
-    useEffect(() => {
-        if (!showComments) return;
-        apiFetch<FeedbackItem[]>(`/feedback/${product._id}`).then(setFeedback).catch(console.error);
-    }, [showComments, product._id]);
-
-    const submitFeedback = async () => {
-        setError(null);
+    const buyProduct = async () => {
         try {
-            await apiFetch(`/feedback/${product._id}`, {
+            await apiFetch('/orders', {
                 method: 'POST',
-                body: JSON.stringify({ rating, comment }),
+                body: JSON.stringify({ productId: product._id, quantity }),
             });
-            setComment('');
-            setShowComments(true);
-            const list = await apiFetch<FeedbackItem[]>(`/feedback/${product._id}`);
-            setFeedback(list);
+            alert(`Ordered ${quantity} x ${product.name} for $${(product.price * quantity).toFixed(2)}`);
         } catch (e: any) {
-            // Surface a helpful message in UI instead of unhandled rejection
-            const msg = typeof e?.message === 'string' ? e.message : 'Failed to submit feedback. Please try again.';
-            setError(msg);
-            console.error('Submit feedback failed:', e);
+            alert(`Failed to order: ${e.message || 'Unknown error'}`);
         }
     };
 
@@ -137,40 +112,24 @@ function ProductCard({ product }: { product: Product }) {
             <div className="flex justify-between">
                 <h3 className="font-semibold">{product.name}</h3>
                 <Label>${product.price.toFixed(2)}</Label>
-            </div>  
+            </div>
             <Label className="text-sm text-gray-600">{product.description}</Label>
             <Label className="text-sm">In stock: {product.inventory} {product.seasonalTag ? `• ${product.seasonalTag}` : ''}</Label>
             <Label className="text-sm">Avg rating: {product.avgRating?.toFixed(1) || '—'}</Label>
 
             <div className="pt-2 border-t mt-2 space-y-2">
                 <div className="flex items-center gap-2">
-                    <Label>Rate:</Label>
-                    <div className="flex items-center gap-2">
-                        <Rating value={rating} onChange={setRating} />
-                        <span className="text-xs text-gray-500">{rating}/5</span>
-                    </div>
+                    <Label>Quantity:</Label>
+                    <Input
+                        type="number"
+                        min="1"
+                        max={product.inventory}
+                        value={quantity}
+                        onChange={e => setQuantity(Number(e.target.value))}
+                        className="w-20"
+                    />
                 </div>
-                <Textarea className="border p-2 w-full" placeholder="Comment" value={comment} onChange={e => setComment(e.target.value)} />
-                {error && (
-                    <div className="p-2 text-sm bg-red-100 border border-red-300 text-red-700">
-                        {error}
-                    </div>
-                )}
-                <div className="flex gap-2">
-                    <Button variant="default" onClick={submitFeedback}>Submit Feedback</Button>
-                    <Button variant="outline"  onClick={() => setShowComments(v => !v)}>{showComments ? 'Hide' : 'View'} Recent Comments</Button>
-                </div>
-                {showComments && (
-                    <div className="space-y-2">
-                        {feedback.length === 0 && <Label className="text-sm text-gray-500">No comments yet.</Label>}
-                        {feedback.map(f => (
-                            <div key={f._id} className="text-sm border-t pt-2">
-                                <Label className="font-medium">Rating: {f.rating}</Label>
-                                {f.comment && <div className="text-gray-700">{f.comment}</div>}
-                            </div>
-                        ))}
-                    </div>
-                )}
+                <Button variant="default" onClick={buyProduct}>Buy Now</Button>
             </div>
         </Card>
     );

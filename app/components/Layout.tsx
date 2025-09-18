@@ -21,6 +21,8 @@ function Navbar() {
                 </Link>
                 <nav className="flex items-center gap-4 text-sm">
                     <Link to="/products" className="hover:underline">Products</Link>
+                    <Link to="/orders" className="hover:underline">Orders</Link>
+                    <Link to="/feedback" className="hover:underline">Feedback</Link>
                     <Link to="/admin" className="hover:underline">Admin</Link>
                 </nav>
             </div>
