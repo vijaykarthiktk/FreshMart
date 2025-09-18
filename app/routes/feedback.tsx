@@ -32,11 +32,7 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function FeedbackPage() {
-    return (
-        <AuthGate>
-            <FeedbackInner />
-        </AuthGate>
-    );
+    return <FeedbackInner />;
 }
 
 function FeedbackInner() {
@@ -54,7 +50,15 @@ function FeedbackInner() {
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Feedback</h1>
-                <div className="text-sm text-gray-600">{user?.email} <LogoutButton /></div>
+                <div className="text-sm text-gray-600">
+                    {user ? (
+                        <>
+                            {user.email} <LogoutButton />
+                        </>
+                    ) : (
+                        <a href="/auth" className="text-blue-600 underline">Login to submit feedback</a>
+                    )}
+                </div>
             </div>
 
             <div className="space-y-4">
@@ -84,6 +88,7 @@ function FeedbackForm({ product }: { product: Product }) {
     const [showComments, setShowComments] = useState(false);
     const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const { user } = useUser();
 
     useEffect(() => {
         if (!showComments) return;
@@ -91,6 +96,10 @@ function FeedbackForm({ product }: { product: Product }) {
     }, [showComments, product._id]);
 
     const submitFeedback = async () => {
+        if (!user) {
+            setError('You must be logged in to submit feedback.');
+            return;
+        }
         setError(null);
         try {
             await apiFetch(`/feedback/${product._id}`, {
