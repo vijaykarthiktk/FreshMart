@@ -36,6 +36,7 @@ export default function ProductsPage() {
 function ProductsInner() {
     const [products, setProducts] = useState<Product[]>([]);
     const [notif, setNotif] = useState<{ title: string; message: string } | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
     const { user } = useUser();
 
     useEffect(() => {
@@ -70,6 +71,9 @@ function ProductsInner() {
         return () => { unsubProducts(); unsubNotif(); };
     }, []);
 
+    const categories = Array.from(new Set(products.map(p => p.seasonalTag).filter(Boolean)));
+    const filteredProducts = selectedCategory ? products.filter(p => p.seasonalTag === selectedCategory) : products;
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -83,8 +87,24 @@ function ProductsInner() {
                 </div>
             )}
 
+            <div className="space-y-2">
+                <div>
+                    <Label>Filter by Category:</Label>
+                    <select
+                        value={selectedCategory}
+                        onChange={e => setSelectedCategory(e.target.value)}
+                        className="border p-2 ml-2"
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map(p => (
+                {filteredProducts.map(p => (
                     <ProductCard key={p._id} product={p} />
                 ))}
             </div>
