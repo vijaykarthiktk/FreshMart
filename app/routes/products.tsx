@@ -115,7 +115,6 @@ function ProductCard({ product }: { product: Product }) {
             </div>
             <Label className="text-sm text-gray-600">{product.description}</Label>
             <Label className="text-sm">In stock: {product.inventory} {product.seasonalTag ? `• ${product.seasonalTag}` : ''}</Label>
-            <Label className="text-sm">Avg rating: {product.avgRating?.toFixed(1) || '—'}</Label>
 
             <div className="pt-2 border-t mt-2 space-y-2">
                 <div className="flex items-center gap-2">
