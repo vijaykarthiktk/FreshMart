@@ -94,15 +94,7 @@ function Dashboard() {
         }
     };
 
-    const handleHideProduct = async (id: string, hidden: boolean) => {
-        try {
-            await apiFetch(`/products/${id}`, { method: 'PATCH', body: JSON.stringify({ hidden }) });
-            setProducts(await apiFetch<any[]>('/products'));
-            alert(hidden ? 'Product hidden' : 'Product shown');
-        } catch (e: any) {
-            alert('Failed to update product: ' + e.message);
-        }
-    };
+
 
     return (
         <div className="space-y-6">
@@ -138,13 +130,10 @@ function Dashboard() {
                     {products.map(p => (
                         <div key={p._id} className="flex justify-between items-center p-2 border rounded">
                             <div>
-                                <strong>{p.name}</strong> - ${p.price} - Stock: {p.inventory} {p.hidden && <span className="text-red-500">(Hidden)</span>}
+                                <strong>{p.name}</strong> - ${p.price} - Stock: {p.inventory}
                             </div>
                             <div className="flex gap-2">
                                 <button className="bg-yellow-500 text-white px-2 rounded" onClick={() => setEditingProduct(p)}>Edit</button>
-                                <button className="bg-red-500 text-white px-2 rounded" onClick={() => handleHideProduct(p._id, !p.hidden)}>
-                                    {p.hidden ? 'Show' : 'Hide'}
-                                </button>
                             </div>
                         </div>
                     ))}
