@@ -50,8 +50,7 @@ function AdminInner() {
 function Dashboard() {
     const [overview, setOverview] = useState<any>(null);
     const [ratings, setRatings] = useState<any[]>([]);
-    const [selectedProduct, setSelectedProduct] = useState<string>('');
-    const [priceHistory, setPriceHistory] = useState<any[]>([]);
+
     const [broadcastTitle, setBroadcastTitle] = useState('Flash Sale');
     const [broadcastMsg, setBroadcastMsg] = useState('Bananas 15% off!');
     const [products, setProducts] = useState<any[]>([]);
@@ -64,21 +63,14 @@ function Dashboard() {
         apiFetch<any[]>('/products').then(setProducts);
     }, []);
 
-    useEffect(() => {
-        if (!selectedProduct) return;
-        apiFetch<any[]>(`/admin/analytics/price-trends/${selectedProduct}`).then(setPriceHistory);
-    }, [selectedProduct]);
+
 
     const handleBroadcast = async () => {
         await apiFetch('/notifications/broadcast', { method: 'POST', body: JSON.stringify({ title: broadcastTitle, message: broadcastMsg }) });
         alert('Notification sent');
     };
 
-    const handleAutoAdjust = async () => {
-        if (!selectedProduct) return;
-        const p = await apiFetch(`/products/${selectedProduct}/auto-adjust`, { method: 'POST' }) as any;
-        alert(`New price: $${p.price.toFixed(2)}`);
-    };
+
 
     const handleAddProduct = async (product: any) => {
         try {
@@ -121,16 +113,10 @@ function Dashboard() {
             <section className="grid md:grid-cols-3 gap-4">
                 <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"><div className="text-sm text-gray-600">Products</div><div className="text-2xl font-semibold">{overview?.productCount ?? '—'}</div></div>
                 <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"><div className="text-sm text-gray-600">Feedback</div><div className="text-2xl font-semibold">{overview?.feedbackCount ?? '—'}</div></div>
-                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"><div className="text-sm text-gray-600">Top Rated</div><div className="text-sm">{ratings.slice(0, 3).map(r => r._id).join(', ')}</div></div>
+                {/* <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"><div className="text-sm text-gray-600">Top Rated</div><div className="text-sm">{ratings.slice(0, 3).map(r => r._id).join(', ')}</div></div> */}
             </section>
 
-            <section className="space-y-2">
-                <h2 className="font-semibold">Price Trends</h2>
-                <ProductPicker onPick={setSelectedProduct} />
-                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm inline-block">
-                    <LineChart data={priceHistory.map(h => ({ createdAt: h.createdAt, price: h.newPrice }))} xKey="createdAt" yKey="price" />
-                </div>
-            </section>
+
 
             <section className="space-y-2">
                 <h2 className="font-semibold">Notifications</h2>
@@ -141,13 +127,7 @@ function Dashboard() {
                 </div>
             </section>
 
-            <section className="space-y-2">
-                <h2 className="font-semibold">Auto Price Adjust</h2>
-                <div className="flex gap-2 items-center">
-                    <ProductPicker onPick={setSelectedProduct} />
-                    <button className="bg-green-600 text-white px-3 rounded-lg" onClick={handleAutoAdjust}>Run Auto-Adjust</button>
-                </div>
-            </section>
+
 
             <section className="space-y-2">
                 <h2 className="font-semibold">Product Management</h2>
