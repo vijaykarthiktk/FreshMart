@@ -4,7 +4,6 @@ import { Rating } from '../components/ui/Rating';
 import { apiFetch } from '../lib/api';
 import { AuthGate, LogoutButton, useUser } from '../components/AuthGate';
 import { Button } from "~/components/ui/Button";
-import { Card } from "~/components/ui/Card";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
 
@@ -42,11 +41,14 @@ export default function FeedbackPage() {
 
 function FeedbackInner() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProductId, setSelectedProductId] = useState<string>('');
     const { user } = useUser();
 
     useEffect(() => {
         apiFetch<Product[]>('/products').then(setProducts).catch(() => { });
     }, []);
+
+    const selectedProduct = products.find(p => p._id === selectedProductId);
 
     return (
         <div className="space-y-4">
@@ -55,16 +57,28 @@ function FeedbackInner() {
                 <div className="text-sm text-gray-600">{user?.email} <LogoutButton /></div>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map(p => (
-                    <FeedbackCard key={p._id} product={p} />
-                ))}
+            <div className="space-y-4">
+                <div>
+                    <Label>Select Product:</Label>
+                    <select
+                        value={selectedProductId}
+                        onChange={e => setSelectedProductId(e.target.value)}
+                        className="border p-2 w-full"
+                    >
+                        <option value="">Choose a product...</option>
+                        {products.map(p => (
+                            <option key={p._id} value={p._id}>{p.name}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {selectedProduct && <FeedbackForm product={selectedProduct} />}
             </div>
         </div>
     );
 }
 
-function FeedbackCard({ product }: { product: Product }) {
+function FeedbackForm({ product }: { product: Product }) {
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
     const [showComments, setShowComments] = useState(false);
@@ -95,16 +109,11 @@ function FeedbackCard({ product }: { product: Product }) {
     };
 
     return (
-        <Card className=" p-4">
-            <div className="flex justify-between">
-                <h3 className="font-semibold">{product.name}</h3>
-                <Label>${product.price.toFixed(2)}</Label>
-            </div>
-            <Label className="text-sm text-gray-600">{product.description}</Label>
-            <Label className="text-sm">In stock: {product.inventory} {product.seasonalTag ? `• ${product.seasonalTag}` : ''}</Label>
-            <Label className="text-sm">Avg rating: {product.avgRating?.toFixed(1) || '—'}</Label>
+        <div className="border p-4 rounded space-y-2">
+            <h3 className="font-semibold">{product.name}</h3>
+            <p className="text-sm text-gray-600">{product.description}</p>
 
-            <div className="pt-2 border-t mt-2 space-y-2">
+            <div className="space-y-2">
                 <div className="flex items-center gap-2">
                     <Label>Rate:</Label>
                     <div className="flex items-center gap-2">
@@ -134,6 +143,6 @@ function FeedbackCard({ product }: { product: Product }) {
                     </div>
                 )}
             </div>
-        </Card>
+        </div>
     );
 }
